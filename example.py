@@ -1,12 +1,13 @@
 import gymnasium as gym
 import highway_env
 import numpy as np
+import environments.environment_utils as eu
 
-env = gym.make("highway-v0",render_mode="rgb_array")
+env = eu.make_env(eu.EnvRegistry.u_turn)
 
 env.reset()
 
-for _ in range(1000):
+while(True):
     action = env.action_space.sample()
     obs, reward, done, truncated, info = env.step(action)
     env.render()
