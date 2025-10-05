@@ -40,13 +40,6 @@ def make_env(env_id: str, config: Dict[str, Any] = None, render_mode: str = 'hum
     config = {
         "screen_width": 800,
         "screen_height": 600,
-        "screen_height": 600,
-        "simulation_frequency": 15,
-        "vehicles_density": 0.1,  # fewer vehicles
-        "duration": 40,  # max episode duration
-        "controlled_vehicles": 1,
-        "max_speed": 2,  # lower max speed (default is higher, e.g., 30)
-        "desired_speed": 1,  # lower desired speed
     }
 
     if render_mode is not None:
