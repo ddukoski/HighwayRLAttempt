@@ -24,7 +24,7 @@ class EnvRegistry:
         return [v for k, v in cls.__dict__.items() if not k.startswith("__") and not callable(v)]
 
 
-def make_env(env_id: str, config: Dict[str, Any] = None, render_mode: str = 'human') -> gym.Env:
+def make_env(env_id: str, config: Dict[str, Any] = None, render_mode: str = None) -> gym.Env:
     """
     Create a Gym environment by ID.
 
@@ -38,9 +38,18 @@ def make_env(env_id: str, config: Dict[str, Any] = None, render_mode: str = 'hum
     """
 
     config = {
+        "observation": {
+            "type": "Kinematics",
+            "vehicles_count": 15, 
+            "features": ["x", "y", "vx", "vy", "cos_h", "sin_h", "heading"],
+            "normalize": True
+        },
         "screen_width": 800,
         "screen_height": 600,
     }
+
+    return gym.make(env_id, render_mode=render_mode, config=config)
+
 
     if render_mode is not None:
         env = gym.make(env_id, render_mode=render_mode, config=config)
