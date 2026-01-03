@@ -33,6 +33,14 @@ make train-parking
 
 `training.py` creates a training and an evaluation environment with `make_env()` from `environments/environment_utils.py`, builds an agent from the `agents` factory, and uses an `EvalCallback` to save the best model during training. Logging is written to `./logs` so the plotting tools can find TensorBoard event files.
 
+To select an environment, simply modify `ENV_NAME` in `training.py`:
+
+```python
+ENV_NAME = EnvRegistry.<desired_environemnt>
+```
+
+Where `<desired_environemnt>` is any environment belonging to `EnvRegistry` in `/environments/environment_utils`. Currently, the model being selected is only tuned for `highway`, `highway_fast` and `parking`, you may modify this as needed in `training.py`.
+
 ### Loading pretrained models
 
 If you already have a saved model (for example `parking-v0.zip` or `highway-fast-v0.zip`) place it at the repository root and the runner will load it automatically. Example code for programmatic loading:

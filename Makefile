@@ -4,17 +4,11 @@
 install:
 	python3 -m pip install -r requirements.txt
 
-train-highway:
+train:
 	python3 training.py
 
-train-parking:
-	python3 parking.py
-
-eval-highway:
+eval:
 	python3 training.py --eval
-
-eval-parking:
-	python3 parking.py --eval
 
 plot:
 	python3 -m scripts.tensorboard_plot --logdir ./logs --outdir ./logs/plots --poll 0
