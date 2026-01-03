@@ -1,4 +1,5 @@
 # HighwayRLAttempt
+![Autonomous Banner](autonomous.png)
 
 This repository is a small, practical collection of training scripts and helpers for experimenting with `highway-env` and `stable-baselines3`. The goal is to make it easy to run quick experiments, save the best runs, and export clear plots for analysis.
 
