@@ -8,6 +8,7 @@ from environments.environment_utils import EnvRegistry, make_env
 from scripts.tensorboard_plot import watch_and_plot, collect_all_runs, plot_runs, make_publication_plot
 
 ENV_NAME = EnvRegistry.parking
+NUM_EPISODES_EVAL = 10
 LOG_DIR = "./logs"
 
 if ENV_NAME == EnvRegistry.parking:
@@ -112,7 +113,7 @@ mean_reward, std_reward = evaluate_policy(
  
 render_env = make_env(ENV_NAME, render_mode="human", config=env_config)
 
-for episode in range(15):
+for episode in range(NUM_EPISODES_EVAL):
     obs, info = render_env.reset()
     done = False
     while not done:
