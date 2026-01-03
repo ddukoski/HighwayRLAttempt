@@ -1,51 +1,44 @@
-from stable_baselines3 import PPO, A2C
-from stable_baselines3.ddpg import DDPG 
+from __future__ import annotations
+import gymnasium as gym
+from stable_baselines3 import DQN
+from stable_baselines3 import SAC
+from stable_baselines3.her.her_replay_buffer import HerReplayBuffer
 
-class ContinuousAgents:
+class BaseHighwayAgents:
+    """
+    Continuous agents for highway-env.
+    Tuned for:
+        - Highway
+        - Parking: SAC + HER (goal-conditioned)
+    """
+
     @staticmethod
-    def PPO(env, tensorboard_log=None):
-        return PPO(
-            "MlpPolicy",
-            env,
-            verbose=1,
-            learning_rate=1e-4,
-            n_steps=1024,
-            batch_size=64,
-            n_epochs=10,
-            gamma=0.9,
-            gae_lambda=0.95,
-            clip_range=0.2,
-            ent_coef=0.0,
+    def make_dqn_agent(env: gym.Env, tensorboard_log=None, **kwargs) -> DQN:
+        """
+        Creates a DQN agent for discrete action environments (e.g., highway).
+        kwargs can include policy_kwargs, learning_rate, buffer_size, gamma, etc.
+        """
+        return DQN(
+            policy="MlpPolicy",
+            env=env,
+            verbose=0,
             tensorboard_log=tensorboard_log,
+            **kwargs
         )
 
     @staticmethod
-    def DDPG(env, tensorboard_log=None):
-        return DDPG(
-            "MlpPolicy",
+    def make_her_sac_agent(env: gym.Env, tensorboard_log=None, n_sampled_goal=4, goal_selection_strategy='future', **kwargs) -> SAC:
+        """
+        Creates a HER+SAC agent for continuous action environments (e.g., parking).
+        kwargs can include policy_kwargs, learning_rate, buffer_size, gamma, etc.
+        """
+        her_kwargs = dict(n_sampled_goal=n_sampled_goal, goal_selection_strategy=goal_selection_strategy)
+        return SAC(
+            "MultiInputPolicy",
             env,
-            verbose=1,
-            learning_rate=1e-4,
-            buffer_size=50000,
-            learning_starts=1000,
-            batch_size=64,
-            tau=0.005,
-            gamma=0.99,
-            train_freq=(1, "episode"),
-            action_noise=None,
+            replay_buffer_class=HerReplayBuffer,
+            replay_buffer_kwargs=her_kwargs,
+            verbose=0,
             tensorboard_log=tensorboard_log,
-        )
-
-    @staticmethod
-    def A2C(env, tensorboard_log=None):
-        return A2C(
-            "MlpPolicy",
-            env,
-            verbose=1,
-            learning_rate=7e-4,
-            n_steps=5,
-            gamma=0.99,
-            gae_lambda=1.0,
-            ent_coef=0.01,
-            tensorboard_log=tensorboard_log,
+            **kwargs
         )

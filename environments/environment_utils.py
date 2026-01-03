@@ -1,6 +1,8 @@
 import gymnasium as gym
+from gymnasium import spaces
 import highway_env
 from typing import Dict, Any
+import numpy as np
 
 class EnvRegistry:
     highway = "highway-v0"
@@ -25,35 +27,87 @@ class EnvRegistry:
 
 
 def make_env(env_id: str, config: Dict[str, Any] = None, render_mode: str = None) -> gym.Env:
-    """
-    Create a Gym environment by ID.
-
-    Args:
-        env_id: Full Gym environment ID (e.g., "highway-v0")
-        config: Optional dict to override default configuration
-        render_mode: "human", "rgb_array", etc.
-
-    Returns:
-        A gym environment instance.
-    """
-
-    config = {
+    base_config = {
         "observation": {
             "type": "Kinematics",
-            "vehicles_count": 15, 
+            "vehicles_count": 10,
             "features": ["x", "y", "vx", "vy", "cos_h", "sin_h", "heading"],
-            "normalize": True
+            "normalize": True,
         },
+        "reward_speed_range": [10, 20],
+        "simulation_frequency": 10,
+        "policy_frequency": 1,
+        "initial_speed": 10,
+        "action": {
+            "type": "ContinuousAction",
+        },
+        "other_vehicles_type": "highway_env.vehicle.behavior.IDMVehicle",
         "screen_width": 800,
         "screen_height": 600,
     }
 
-    return gym.make(env_id, render_mode=render_mode, config=config)
+    if config is not None:
+        base_config.update(config)
 
+    if env_id in [EnvRegistry.highway, EnvRegistry.highway_fast, EnvRegistry.merge]:
+        base_config["action"] = {"type": "DiscreteMetaAction"}
 
-    if render_mode is not None:
-        env = gym.make(env_id, render_mode=render_mode, config=config)
-    else:
-        env = gym.make(env_id)
+    
+    
+    
+    if env_id == EnvRegistry.parking:
+        base_config["observation"] = {
+            "type": "KinematicsGoal",
+            "features": ["x", "y", "vx", "vy", "cos_h", "sin_h"],
+            "scales": [100, 100, 5, 5, 1, 1],
+            "normalize": False,
+        }
+
+    env = gym.make(env_id, render_mode=render_mode, config=base_config)
+
+    
+    
+    
+    if env_id == EnvRegistry.parking:
+        if not isinstance(env.observation_space, spaces.Dict):
+            class GoalDictWrapper(gym.Wrapper):
+                def __init__(self, env):
+                    super().__init__(env)
+                    
+                    sample_obs, _ = env.reset()
+                    obs_arr = np.array(sample_obs)
+                    obs_shape = obs_arr.shape
+                    obs_dtype = obs_arr.dtype if hasattr(obs_arr, 'dtype') else np.float32
+                    self.observation_space = spaces.Dict({
+                        'observation': spaces.Box(low=-np.inf, high=np.inf, shape=obs_shape, dtype=obs_dtype),
+                        'achieved_goal': spaces.Box(low=-np.inf, high=np.inf, shape=obs_shape, dtype=obs_dtype),
+                        'desired_goal': spaces.Box(low=-np.inf, high=np.inf, shape=obs_shape, dtype=obs_dtype),
+                    })
+
+                def _to_goal_dict(self, observation):
+                    obs_clean = np.nan_to_num(observation, nan=0.0, posinf=1e6, neginf=-1e6)
+                    obs_clean = obs_clean.astype(self.observation_space['observation'].dtype)
+                    
+                    desired = None
+                    if hasattr(self.env.unwrapped, 'goal'):
+                        desired = getattr(self.env.unwrapped, 'goal')
+                    elif hasattr(self.env.unwrapped, 'desired_goal'):
+                        desired = getattr(self.env.unwrapped, 'desired_goal')
+                    if desired is None:
+                        desired = np.zeros(obs_clean.shape, dtype=self.observation_space['desired_goal'].dtype)
+                    
+                    achieved = obs_clean.copy()
+                    return {'observation': obs_clean, 'achieved_goal': achieved, 'desired_goal': desired}
+
+                def reset(self, **kwargs):
+                    obs, info = self.env.reset(**kwargs)
+                    return self._to_goal_dict(obs), info
+
+                def step(self, action):
+                    obs, reward, terminated, truncated, info = self.env.step(action)
+                    return self._to_goal_dict(obs), reward, terminated, truncated, info
+
+            env = GoalDictWrapper(env)
 
     return env
+
