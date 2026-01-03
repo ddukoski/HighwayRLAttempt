@@ -17,16 +17,16 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-To kick off the default highway training run, use the Makefile target:
+To start the configured training run, use the Makefile target:
 
 ```bash
-make train-highway
+make train
 ```
 
-If you want to run the parking experiment (HER+SAC):
+And to launch the evaluation of your trained agent only:
 
 ```bash
-make train-parking
+make eval
 ```
 
 ## How it works
