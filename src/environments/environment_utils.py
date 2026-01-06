@@ -1,8 +1,9 @@
 import gymnasium as gym
-from gymnasium import spaces
 import highway_env
-from typing import Dict, Any
 import numpy as np
+
+from gymnasium import spaces
+from typing import Dict, Any
 
 class EnvRegistry:
     highway = "highway-v0"
@@ -24,7 +25,6 @@ class EnvRegistry:
     def all(cls) -> list[str]:
         """Return a list of all registered environment names."""
         return [v for k, v in cls.__dict__.items() if not k.startswith("__") and not callable(v)]
-
 
 def make_env(env_id: str, config: Dict[str, Any] = None, render_mode: str = None) -> gym.Env:
     base_config = {
@@ -65,9 +65,6 @@ def make_env(env_id: str, config: Dict[str, Any] = None, render_mode: str = None
 
     env = gym.make(env_id, render_mode=render_mode, config=base_config)
 
-    
-    
-    
     if env_id == EnvRegistry.parking:
         if not isinstance(env.observation_space, spaces.Dict):
             class GoalDictWrapper(gym.Wrapper):
