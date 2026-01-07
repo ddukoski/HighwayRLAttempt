@@ -80,7 +80,7 @@ eval_callback = EvalCallback(
     render=False,
 )
 
-model_path = f"{ENV_NAME}.zip"
+model_path = f"models/{ENV_NAME}.zip"
 
 plot_proc = None
 if os.path.exists(model_path):
